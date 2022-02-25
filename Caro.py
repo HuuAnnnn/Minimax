@@ -1,9 +1,16 @@
+from audioop import add
 import math
 import random
+from sqlite3 import Row
+from turtle import position
 
 class CaroBoardGame:
     __table_size = 0
     __table = []
+    __human_chess = 0
+    __ai_chess = 1
+    __scores = {"Win": 10, "Lose": -10, "Draw": 0}
+
     def __init__(self, size: int) -> None:
         self.__table_size = size
         self.__table = [[-1 for i in range(self.__table_size)] for j in range(self.__table_size)]
@@ -35,7 +42,7 @@ class CaroBoardGame:
                 if cell != -1:
                     print(self.convert_value_chess(cell), end="\t")
                 else:
-                    print(" ", end="\t")
+                    print("_", end="\t")
             print()
 
     def convert_value_chess(self, value):
@@ -43,151 +50,189 @@ class CaroBoardGame:
             return "O"
         return "X"
 
-    def is_win(self, board):
-        return self.check_columns_valid(board) or self.check_row_valid(board) or self.check_main_cross(board) or self.check_auxiliary_cross(board)
+    def check_rows(self, board):
+        count_x = 0
+        count_o = 0
 
-    def check_row_valid(self, board):
         for i in range(len(board)):
             count_x = 0
             count_o = 0
-            for j in range(len(board)):
-                if self.__table[i][j] == 0:
-                    count_o += 1
-                if self.__table[i][j] == 1:
-                        count_x += 1
-
-            if count_x == len(board) or count_o == len(board):
-                return True
-
-        return False
-
-    def check_columns_valid(self, board):
-        for i in range(len(board)):
-            count_x = 0
-            count_o = 0
-            for j in range(len(board)):
-                if self.__table[j][i] == 0:
-                    count_o += 1
-                if self.__table[j][i] == 1:
+            for j in range(len(board[0])):
+                if board[i][j] == 1:
                     count_x += 1
-
+                if board[i][j] == 0:
+                    count_o += 1
+        
             if count_x == len(board) or count_o == len(board):
-                return True
+                return (count_x, count_o)
 
-        return False
+        return None
 
+    def check_columns(self, board):
+        count_x = 0
+        count_o = 0
+        for i in range(len(board)):
+            count_x = 0
+            count_o = 0
+            for j in range(len(board[0])):
+                if board[j][i] == 1:
+                    count_x += 1
+                if board[j][i] == 0:
+                    count_o += 1
+        
+            if count_x == len(board) or count_o == len(board):
+                return (count_x, count_o)
+                
+        return None
+        
     def check_main_cross(self, board):
         count_x = 0
         count_o = 0
         for i in range(len(board)):
-            for j in range(len(board)):
-                if i == j:
-                    if self.__table[i][j] == 0:
-                        count_o += 1
-                    if self.__table[i][j] == 1:
-                        count_x += 1
-                    
+            if board[i][i] == 1:
+                count_x += 1
+            if board[i][i] == 0:
+                count_o += 1
+        
         if count_x == len(board) or count_o == len(board):
-            return True
+                return (count_x, count_o)
 
-        return False
-
+        return None
+        
     def check_auxiliary_cross(self, board):
-        x = 0
-        y = self.__table_size - 1
+        y_pos = len(board) - 1
         count_x = 0
         count_o = 0
-        for i in range(len(board)):
-            if self.__table[x][y] == 0:
-                count_o += 1
-            if self.__table[x][y] == 1:
+        for x_pos in range(len(board[0])):
+            if board[x_pos][y_pos] == 1:
                 count_x += 1
-
-            x += 1
-            y -= 1
+            if board[x_pos][y_pos] == 0:
+                count_o += 1
+            y_pos -= 1
         if count_x == len(board) or count_o == len(board):
-            return True
-        return False
-    
+                return (count_x, count_o)
+
+        return None
+
+    def winner(self, board):
+        valid_rows = self.check_rows(board)
+        valid_columns = self.check_columns(board)
+        valid_main_cross = self.check_main_cross(board)
+        valid_auxiliary = self.check_auxiliary_cross(board)
+        winner = 0
+
+        if valid_rows != None:
+            row_x, row_o = valid_rows
+            if row_x > row_o:
+                winner = 1
+        elif valid_columns != None:
+            row_x, row_o = valid_columns
+            if row_x > row_o:
+                winner = 1
+        elif valid_main_cross != None:
+            row_x, row_o = valid_main_cross
+            if row_x > row_o:
+                winner = 1
+        elif valid_auxiliary != None:
+            row_x, row_o = valid_auxiliary
+            if row_x > row_o:
+                winner = 1
+        else:
+            winner = -1
+
+        return winner
+
+    def is_win(self, board):
+        return self.winner(board) != -1
+
     def is_finish(self, board):
-        for i in range(len(board)):
-            for j in range(len(board)):
-                if self.__table[i][j] == -1:
-                    return False
+        for row in board:
+            if -1 in row:
+                return False
 
         return True
 
     def is_draw(self, board):
-        return self.is_finish(board) and not self.is_win(board)
+        return not self.is_win(board) and self.is_finish(board)
 
-    def convert_state_to_value(self, board):
-        if self.is_win(board):
-            return 1
+    def check_state(self, board):
+        if self.winner(board) == 1:
+            return "Win"
+        elif self.winner(board) == 0:
+            return "Lose"
         elif self.is_draw(board):
-            return 0
+            return "Draw"
         else:
-            return -1
+            return "n"
 
-    def minimax(self, board, depth, maximizing):
-        if self.is_finish(board):
-            return self.convert_state_to_value(board)
+    def minimax(self, board, depth, minimize):
+        current_state = self.check_state(board)
+        if current_state != "n":
+            if current_state == "Win":
+                return self.__scores[current_state] - depth
+            elif current_state == "Lose":
+                return self.__scores[current_state] + depth
+            else:
+                return self.__scores[current_state]
+            
+        if minimize:
+            best_score = -math.inf
 
-        best_score = 0
-        if maximizing:
-            maximum = -math.inf            
             for i in range(len(board)):
                 for j in range(len(board[0])):
                     if board[i][j] == -1:
-                        board[i][j] = 1
+                        board[i][j] = self.__ai_chess
                         score = self.minimax(board, depth+1, False)
                         board[i][j] = -1
-                        best_score = max(maximum, score)
-
+                        best_score = max(best_score, score)
+            
             return best_score
+
         else:
-            minimum = math.inf
+            best_score = math.inf
 
             for i in range(len(board)):
                 for j in range(len(board[0])):
                     if board[i][j] == -1:
-                        board[i][j] = 0
-                        score = self.minimax(board, depth+1, True)                  
+                        board[i][j] = self.__human_chess
+                        score = self.minimax(board, depth+1, True)
                         board[i][j] = -1
-                        best_score = min(minimum, score)
+                        best_score = min(best_score, score)
             
             return best_score
 
     def is_new_board(self, board):
+        count = 0
         for row in board:
             for cell in row:
-                if cell != -1:
-                    return False
-        return True
-
+                if cell == -1:
+                    count+=1
+        return count == len(board)*len(board[0])
+        
     def best_move(self, chess):
         best_score = -math.inf
-        board = self.__table.copy()
-        position = []
+        board = self.__table
+        position = [0, 0]
         if self.is_new_board(board):
-            position = [random.randrange(self.__table_size), random.randrange(self.__table_size)]
+            position = [random.randrange(0, len(board)), random.randrange(0, len(board[0]))]
         else:
             for i in range(len(board)):
-                for j in range(len(board)):
+                for j in range(len(board[0])):
                     if board[i][j] == -1:
-                        board[i][j] = 1
-                        score = self.minimax(board, 0, True)
+                        board[i][j] = chess
+                        score = self.minimax(board, 0, False)
                         board[i][j] = -1
-                        if best_score < score:
+                        if score > best_score:
                             best_score = score
                             position = [i, j]
 
         self.put_to_possition(position[0], position[1], chess)
 
 def user_ai(init):
-    chess = 0
+    chess = 1
     while True:
         try:
-            if chess == 1:
+            if chess == 0:
                 print(f"Turn of {chess}: ", end="")
                 x_y_pos = input()
                 x_y_pos = x_y_pos.strip()
@@ -195,13 +240,14 @@ def user_ai(init):
 
                 if not init.put_to_possition(int(x_pos), int(y_pos), chess):
                     print("Enter again")
+                    continue
             else:
                 init.best_move(chess)
 
             init.display_table()
             if init.is_win(init.get_table()):
                 return chess
-            if init.is_draw(init.get_table()):
+            if init.is_draw(init.get_table()):                
                 return 100
             
             if chess == 1:
@@ -233,3 +279,45 @@ def ai_ai(init):
             print("Enter again")
         except KeyboardInterrupt:
             break
+
+
+def user_user(init):
+    chess = 1
+    while True:
+        try:
+            if chess == 0:
+                print(f"Turn of {chess}: ", end="")
+                x_y_pos = input()
+                x_y_pos = x_y_pos.strip()
+                x_pos, y_pos = tuple(x_y_pos.split(" "))
+
+                if not init.put_to_possition(int(x_pos), int(y_pos), chess):
+                    print("Enter again")
+                    continue
+            else:
+                print(f"Turn of {chess}: ", end="")
+                x_y_pos = input()
+                x_y_pos = x_y_pos.strip()
+                x_pos, y_pos = tuple(x_y_pos.split(" "))
+
+                if not init.put_to_possition(int(x_pos), int(y_pos), chess):
+                    print("Enter again")
+                    continue
+
+            init.display_table()
+            if init.is_win(init.get_table()):
+                return init.winner(init.get_table())
+            if init.is_draw(init.get_table()):            
+                return 100
+            
+            if chess == 1:
+                chess = 0
+            else:
+                chess = 1
+        except ValueError:
+            print("Enter again")
+        except KeyboardInterrupt:
+            break
+
+
+print(user_ai(CaroBoardGame(4)))
