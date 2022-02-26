@@ -1,9 +1,5 @@
-from audioop import add
 import math
 import random
-from sqlite3 import Row
-from turtle import position
-
 class CaroBoardGame:
     __table_size = 0
     __table = []
@@ -169,9 +165,9 @@ class CaroBoardGame:
         current_state = self.check_state(board)
         if current_state != "n":
             if current_state == "Win":
-                return self.__scores[current_state] - depth
+                return self.__scores[current_state]
             elif current_state == "Lose":
-                return self.__scores[current_state] + depth
+                return self.__scores[current_state]
             else:
                 return self.__scores[current_state]
             
@@ -320,4 +316,4 @@ def user_user(init):
             break
 
 
-print(user_ai(CaroBoardGame(4)))
+print(user_ai(CaroBoardGame(3)))
