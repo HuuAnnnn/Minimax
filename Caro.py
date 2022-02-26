@@ -165,9 +165,9 @@ class CaroBoardGame:
         current_state = self.check_state(board)
         if current_state != "n":
             if current_state == "Win":
-                return self.__scores[current_state]
+                return self.__scores[current_state] - depth
             elif current_state == "Lose":
-                return self.__scores[current_state]
+                return self.__scores[current_state] + depth
             else:
                 return self.__scores[current_state]
             
