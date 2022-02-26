@@ -173,7 +173,6 @@ class CaroBoardGame:
             
         if minimize:
             best_score = -math.inf
-
             for i in range(len(board)):
                 for j in range(len(board[0])):
                     if board[i][j] == -1:
@@ -224,6 +223,9 @@ class CaroBoardGame:
 
         self.put_to_possition(position[0], position[1], chess)
 
+    def ai(self, chess):
+        self.best_move(chess)
+
 def user_ai(init):
     chess = 1
     while True:
@@ -238,7 +240,7 @@ def user_ai(init):
                     print("Enter again")
                     continue
             else:
-                init.best_move(chess)
+                init.ai(chess)
 
             init.display_table()
             if init.is_win(init.get_table()):
@@ -255,65 +257,4 @@ def user_ai(init):
         except KeyboardInterrupt:
             break
 
-def ai_ai(init):
-    chess = 0
-    while True:
-        try:
-            init.best_move(chess)
-
-            init.display_table()
-            if init.is_win(init.get_table()):
-                return chess
-            if init.is_draw(init.get_table()):
-                return 100
-            
-            if chess == 1:
-                chess = 0
-            else:
-                chess = 1
-        except ValueError:
-            print("Enter again")
-        except KeyboardInterrupt:
-            break
-
-
-def user_user(init):
-    chess = 1
-    while True:
-        try:
-            if chess == 0:
-                print(f"Turn of {chess}: ", end="")
-                x_y_pos = input()
-                x_y_pos = x_y_pos.strip()
-                x_pos, y_pos = tuple(x_y_pos.split(" "))
-
-                if not init.put_to_possition(int(x_pos), int(y_pos), chess):
-                    print("Enter again")
-                    continue
-            else:
-                print(f"Turn of {chess}: ", end="")
-                x_y_pos = input()
-                x_y_pos = x_y_pos.strip()
-                x_pos, y_pos = tuple(x_y_pos.split(" "))
-
-                if not init.put_to_possition(int(x_pos), int(y_pos), chess):
-                    print("Enter again")
-                    continue
-
-            init.display_table()
-            if init.is_win(init.get_table()):
-                return init.winner(init.get_table())
-            if init.is_draw(init.get_table()):            
-                return 100
-            
-            if chess == 1:
-                chess = 0
-            else:
-                chess = 1
-        except ValueError:
-            print("Enter again")
-        except KeyboardInterrupt:
-            break
-
-
-print(user_ai(CaroBoardGame(3)))
+user_ai(CaroBoardGame(3))
