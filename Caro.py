@@ -91,7 +91,7 @@ class CaroBoardGame:
                 count_o += 1
         
         if count_x == len(board) or count_o == len(board):
-                return (count_x, count_o)
+            return (count_x, count_o)
 
         return None
         
@@ -105,35 +105,32 @@ class CaroBoardGame:
             if board[x_pos][y_pos] == 0:
                 count_o += 1
             y_pos -= 1
+
         if count_x == len(board) or count_o == len(board):
-                return (count_x, count_o)
+            return (count_x, count_o)
 
         return None
 
     def winner(self, board):
-        valid_rows = self.check_rows(board)
-        valid_columns = self.check_columns(board)
-        valid_main_cross = self.check_main_cross(board)
-        valid_auxiliary = self.check_auxiliary_cross(board)
-        winner = 0
+        board_state = [
+            self.check_rows(board), 
+            self.check_columns(board), 
+            self.check_main_cross(board), 
+            self.check_auxiliary_cross(board)
+        ]
 
-        if valid_rows != None:
-            row_x, row_o = valid_rows
-            if row_x > row_o:
-                winner = 1
-        elif valid_columns != None:
-            row_x, row_o = valid_columns
-            if row_x > row_o:
-                winner = 1
-        elif valid_main_cross != None:
-            row_x, row_o = valid_main_cross
-            if row_x > row_o:
-                winner = 1
-        elif valid_auxiliary != None:
-            row_x, row_o = valid_auxiliary
-            if row_x > row_o:
-                winner = 1
-        else:
+        winner = 0
+        found = False
+        
+        for state in board_state:
+            if state != None:
+                row_x, row_o = state
+                if row_x > row_o:
+                    winner = 1
+                    found = True
+                    break
+
+        if not found:
             winner = -1
 
         return winner
