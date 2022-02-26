@@ -29,7 +29,7 @@ class CaroBoardGame:
         print()
 
     def display_table(self):
-        print("_"*50)
+        print("_"*(self.__table_size+1+7*(self.__table_size+1)))
         self.display_header()
         for i in range(self.__table_size):
             print()
