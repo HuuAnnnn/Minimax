@@ -119,24 +119,22 @@ class CaroBoardGame:
         valid_auxiliary = self.check_auxiliary_cross(board)
 
         winner = 0
+        row_x = math.inf
+        row_o = math.inf
+
         if valid_rows != None:
             row_x, row_o = valid_rows
-            if row_x > row_o:
-                winner = 1
         elif valid_columns != None:
             row_x, row_o = valid_columns
-            if row_x > row_o:
-                winner = 1
         elif valid_main_cross != None:
             row_x, row_o = valid_main_cross
-            if row_x > row_o:
-                winner = 1
         elif valid_auxiliary != None:
             row_x, row_o = valid_auxiliary
-            if row_x > row_o:
-                winner = 1
         else:
             winner = -1
+
+        if row_x > row_o:
+                winner = 1
 
         return winner
 
@@ -162,7 +160,7 @@ class CaroBoardGame:
             return "Draw"
         else:
             return "n"
-
+    
     def minimax(self, board, depth, minimize):
         current_state = self.check_state(board)
         if current_state != "n":
@@ -177,14 +175,17 @@ class CaroBoardGame:
             best_score = -math.inf
             for i in range(len(board)):
                 for j in range(len(board[0])):
+                    # create a new node
                     if board[i][j] == -1:
+                        # try puting chess
                         board[i][j] = self.__ai_chess
+                        # Calculating score of this case
                         score = self.minimax(board, depth+1, False)
+                        # restore
                         board[i][j] = -1
                         best_score = max(best_score, score)
             
             return best_score
-
         else:
             best_score = math.inf
             for i in range(len(board)):
@@ -194,7 +195,7 @@ class CaroBoardGame:
                         score = self.minimax(board, depth+1, True)
                         board[i][j] = -1
                         best_score = min(best_score, score)
-            
+                        
             return best_score
 
     def is_new_board(self, board):
@@ -205,7 +206,7 @@ class CaroBoardGame:
                     count+=1
         return count == len(board)*len(board[0])
         
-    def best_move(self, chess):
+    def __best_move(self, chess):
         best_score = -math.inf
         board = self.__table
         position = [0, 0]
@@ -225,37 +226,4 @@ class CaroBoardGame:
         self.put_to_possition(position[0], position[1], chess)
 
     def ai(self, chess):
-        self.best_move(chess)
-
-
-def user_ai(init):
-    chess = 1
-    while True:
-        try:
-            if chess == 0:
-                print(f"Turn of {chess}: ", end="")
-                x_y_pos = input()
-                x_y_pos = x_y_pos.strip()
-                x_pos, y_pos = tuple(x_y_pos.split(" "))
-
-                if not init.put_to_possition(int(x_pos), int(y_pos), chess):
-                    print("Enter again")
-            else:
-                init.best_move(chess)
-
-            init.display_table()
-            if init.is_win(init.get_table()):
-                return chess
-            if init.is_draw(init.get_table()):
-                return 100
-
-            if chess == 1:
-                chess = 0
-            else:
-                chess = 1
-        except ValueError:
-            print("Enter again")
-        except KeyboardInterrupt:
-            break
-
-user_ai(CaroBoardGame(3))
+        self.__best_move(chess)
