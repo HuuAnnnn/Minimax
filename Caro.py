@@ -213,19 +213,14 @@ class CaroBoardGame:
             best_score = -math.inf
             for i in range(len(board)):
                 for j in range(len(board[0])):
-                    # create a new node
                     if board[i][j] == -1:
-                        # try puting chess
                         board[i][j] = self.__ai_chess
-                        # Calculating score of this case
                         score = self.__alpha_beta_pruning(board, depth+1, False, alpha, beta)
-                        # restore
                         board[i][j] = -1
                         best_score = max(best_score, score)
-                        if score >= beta:
+                        alpha = max(alpha, score)
+                        if beta >= alpha:
                             return best_score
-                        alpha = max(alpha, best_score)
-
 
             return best_score
             
@@ -238,10 +233,10 @@ class CaroBoardGame:
                         score = self.__alpha_beta_pruning(board, depth+1, True, alpha, beta)
                         board[i][j] = -1
                         best_score = min(best_score, score)
-                        if score <= alpha:
+                        beta = min(beta, score)
+                        if beta >= alpha:
                             return best_score
-                        beta = min(beta, best_score)
-                        
+
             return best_score
 
     def __is_new_board(self, board):
