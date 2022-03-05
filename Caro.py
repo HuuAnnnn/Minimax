@@ -1,7 +1,7 @@
 import math
 import random
 
-class CaroBoardGame:
+class Caro:
     __table_size = 0
     __table = []
     __human_chess = 0
@@ -48,9 +48,6 @@ class CaroBoardGame:
         return "X"
 
     def __check_rows(self, board):
-        count_x = 0
-        count_o = 0
-
         for i in range(len(board)):
             count_x = 0
             count_o = 0
@@ -66,8 +63,6 @@ class CaroBoardGame:
         return None
 
     def __check_columns(self, board):
-        count_x = 0
-        count_o = 0
         for i in range(len(board)):
             count_x = 0
             count_o = 0
@@ -120,23 +115,21 @@ class CaroBoardGame:
             self.__check_auxiliary_cross(board)
         ]
 
-        __winner = 0
-        row_x = 0
-        row_o = 0
+        win = 0
         is_found = False
 
         for state in states:
             if state != None:
                 row_x, row_o = state
                 if row_x > row_o:
-                    __winner = 1
+                    win = 1
                 is_found = True
                 break
         
         if not is_found:
-            __winner = -1
+            win = -1
 
-        return __winner
+        return win
 
     def is_win(self, board):
         return self.__winner(board) != -1
@@ -217,13 +210,14 @@ class CaroBoardGame:
                         board[i][j] = self.__ai_chess
                         score = self.__alpha_beta_pruning(board, depth+1, False, alpha, beta)
                         board[i][j] = -1
+
                         best_score = max(best_score, score)
-                        alpha = max(alpha, score)
-                        if beta >= alpha:
+                        alpha = max(alpha, best_score)
+                        if alpha >= beta:
                             return best_score
 
             return best_score
-            
+
         else:
             best_score = math.inf
             for i in range(len(board)):
@@ -232,9 +226,10 @@ class CaroBoardGame:
                         board[i][j] = self.__human_chess
                         score = self.__alpha_beta_pruning(board, depth+1, True, alpha, beta)
                         board[i][j] = -1
+
                         best_score = min(best_score, score)
-                        beta = min(beta, score)
-                        if beta >= alpha:
+                        beta = min(beta, best_score)
+                        if alpha >= beta:
                             return best_score
 
             return best_score
@@ -242,9 +237,7 @@ class CaroBoardGame:
     def __is_new_board(self, board):
         count = 0
         for row in board:
-            for cell in row:
-                if cell == -1:
-                    count+=1
+            count += row.count(-1)
         return count == len(board)*len(board[0])
         
     def __best_move(self, chess):
@@ -252,6 +245,7 @@ class CaroBoardGame:
         board = self.__table
         position = [0, 0]
         if self.__is_new_board(board):
+            # position = [0, 0]
             position = [random.randrange(0, len(board)), random.randrange(0, len(board[0]))]
         else:
             for i in range(len(board)):
@@ -259,6 +253,7 @@ class CaroBoardGame:
                     if board[i][j] == -1:
                         board[i][j] = chess
                         score = self.__alpha_beta_pruning(board, 0, False, -math.inf, math.inf)
+                        # score = self.__minimax(board, 0, False)
                         board[i][j] = -1
                         if score > best_score:
                             best_score = score
