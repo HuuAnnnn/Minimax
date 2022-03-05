@@ -7,6 +7,7 @@ class Caro:
     __human_chess = 0
     __ai_chess = 1
     __scores = {"Win": 10, "Lose": -10, "Draw": 0}
+    __chess_value = {0: 'O', 1: 'X'}
 
     def __init__(self, size: int) -> None:
         self.__table_size = size
@@ -37,15 +38,10 @@ class Caro:
             print(i, end='\t')
             for cell in self.__table[i]:
                 if cell != -1:
-                    print(self.__convert_value_chess(cell), end="\t")
+                    print(self.__chess_value[cell], end="\t")
                 else:
                     print("_", end="\t")
             print()
-
-    def __convert_value_chess(self, value):
-        if value == 0:
-            return "O"
-        return "X"
 
     def __check_rows(self, board):
         for i in range(len(board)):
@@ -119,10 +115,11 @@ class Caro:
         is_found = False
 
         for state in states:
-            if state != None:
+            if state:
                 row_x, row_o = state
                 if row_x > row_o:
                     win = 1
+                    
                 is_found = True
                 break
         
@@ -154,7 +151,7 @@ class Caro:
         else:
             return "n"
     
-    def evaluation(self, board, depth):
+    def __evaluation(self, board, depth):
         current_state = self.__check_state(board)
         if current_state != "n":
             if current_state == "Win":
@@ -163,10 +160,11 @@ class Caro:
                 return self.__scores[current_state] + depth
             else:
                 return self.__scores[current_state]
+
         return None
 
     def __minimax(self, board, depth, minimize):
-        board_value = self.evaluation(board, depth)
+        board_value = self.__evaluation(board, depth)
         if board_value != None:
             return board_value
              
@@ -198,7 +196,7 @@ class Caro:
             return best_score
 
     def __alpha_beta_pruning(self, board, depth, minimize, alpha, beta):
-        board_value = self.evaluation(board, depth)
+        board_value = self.__evaluation(board, depth)
         if board_value != None:
             return board_value
 
