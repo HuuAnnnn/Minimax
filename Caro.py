@@ -149,11 +149,11 @@ class Caro:
         elif self.is_draw(board):
             return "Draw"
         else:
-            return "n"
+            return None
     
     def __evaluation(self, board, depth):
         current_state = self.__check_state(board)
-        if current_state != "n":
+        if current_state:
             if current_state == "Win":
                 return self.__scores[current_state] - depth
             elif current_state == "Lose":
