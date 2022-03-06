@@ -57,10 +57,9 @@ def user_user(init):
                     print("Enter again")
                     continue
             else:
-                x_pos, y_pos = (random.randint(0, len(init.get_table())), random.randint(0, len(init.get_table())))
-                state_user1 = init.put_to_possition(int(x_pos), int(y_pos), chess)
+                state_user2 = user_input(init, chess)
 
-                if not state_user1:
+                if not state_user2:
                     print("Enter again")
                     continue
 

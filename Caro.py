@@ -1,5 +1,6 @@
 import math
 import random
+from tkinter import E
 
 class Caro:
     __table_size = 0
@@ -211,8 +212,9 @@ class Caro:
 
                         best_score = max(best_score, score)
                         alpha = max(alpha, best_score)
-                        if alpha >= beta:
-                            return best_score
+
+                        if beta <= alpha:
+                            return alpha
 
             return best_score
 
@@ -227,8 +229,8 @@ class Caro:
 
                         best_score = min(best_score, score)
                         beta = min(beta, best_score)
-                        if alpha >= beta:
-                            return best_score
+                        if beta <= alpha:
+                            return beta
 
             return best_score
 
