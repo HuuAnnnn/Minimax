@@ -22,7 +22,7 @@ def user_ai(init):
                 start = time.time()
                 init.ai(chess)
                 end = time.time()
-                print(f"Evaluation {round(end-start, 4)}")
+                print(f"Evaluation {round(end - start, 7)}")
 
             init.display_table()
             if init.is_win(init.get_table()):

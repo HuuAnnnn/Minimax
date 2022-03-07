@@ -1,6 +1,5 @@
 import math
 import random
-from tkinter import E
 
 class Caro:
     __table_size = 0
@@ -46,14 +45,9 @@ class Caro:
 
     def __check_rows(self, board):
         for i in range(len(board)):
-            count_x = 0
-            count_o = 0
-            for j in range(len(board[0])):
-                if board[i][j] == 1:
-                    count_x += 1
-                if board[i][j] == 0:
-                    count_o += 1
-        
+            count_x = board[i].count(1)
+            count_o = board[i].count(0)
+
             if count_x == len(board) or count_o == len(board):
                 return (count_x, count_o)
 
@@ -61,27 +55,19 @@ class Caro:
 
     def __check_columns(self, board):
         for i in range(len(board)):
-            count_x = 0
-            count_o = 0
-            for j in range(len(board[0])):
-                if board[j][i] == 1:
-                    count_x += 1
-                if board[j][i] == 0:
-                    count_o += 1
-        
+            col = [board[j][i] for j in range(len(board[0]))]
+            count_x = col.count(1)
+            count_o = col.count(0)
+                    
             if count_x == len(board) or count_o == len(board):
                 return (count_x, count_o)
                 
         return None
         
     def __check_main_cross(self, board):
-        count_x = 0
-        count_o = 0
-        for i in range(len(board)):
-            if board[i][i] == 1:
-                count_x += 1
-            if board[i][i] == 0:
-                count_o += 1
+        main_cross = [board[i][i] for i in range(len(board))]
+        count_x = main_cross.count(1)
+        count_o = main_cross.count(0)
         
         if count_x == len(board) or count_o == len(board):
             return (count_x, count_o)
@@ -152,22 +138,21 @@ class Caro:
         else:
             return None
     
-    def __evaluation(self, board, depth):
-        current_state = self.__check_state(board)
-        if current_state:
-            if current_state == "Win":
-                return self.__scores[current_state] - depth
-            elif current_state == "Lose":
-                return self.__scores[current_state] + depth
+    def __evaluation(self, state, depth):
+        if state:
+            if state == "Win":
+                return self.__scores[state] - depth
+            elif state == "Lose":
+                return self.__scores[state] + depth
             else:
-                return self.__scores[current_state]
+                return self.__scores[state]
 
         return None
 
     def __minimax(self, board, depth, minimize):
-        board_value = self.__evaluation(board, depth)
-        if board_value != None:
-            return board_value
+        end_state = self.__check_state(board)
+        if end_state:
+            return self.__evaluation(end_state, depth)
              
         if minimize:
             best_score = -math.inf
@@ -197,9 +182,10 @@ class Caro:
             return best_score
 
     def __alpha_beta_pruning(self, board, depth, minimize, alpha, beta):
-        board_value = self.__evaluation(board, depth)
-        if board_value != None:
-            return board_value
+        # if this state is end of the board then return utility value
+        end_state = self.__check_state(board)
+        if end_state:
+            return self.__evaluation(end_state, depth)
 
         if minimize:
             best_score = -math.inf
@@ -207,31 +193,27 @@ class Caro:
                 for j in range(len(board[0])):
                     if board[i][j] == -1:
                         board[i][j] = self.__ai_chess
-                        score = self.__alpha_beta_pruning(board, depth+1, False, alpha, beta)
+                        score = self.__alpha_beta_pruning(board, depth + 1, not minimize, alpha, beta)
                         board[i][j] = -1
 
-                        best_score = max(best_score, score)
-                        alpha = max(alpha, best_score)
-
+                        alpha = max(alpha, score)
+                        best_score = max(alpha, best_score)
                         if beta <= alpha:
-                            return alpha
-
+                            return best_score
             return best_score
-
         else:
             best_score = math.inf
             for i in range(len(board)):
                 for j in range(len(board[0])):
                     if board[i][j] == -1:
                         board[i][j] = self.__human_chess
-                        score = self.__alpha_beta_pruning(board, depth+1, True, alpha, beta)
+                        score = self.__alpha_beta_pruning(board, depth + 1, not minimize, alpha, beta)
                         board[i][j] = -1
 
-                        best_score = min(best_score, score)
-                        beta = min(beta, best_score)
+                        beta = min(beta, score)
+                        best_score = min(beta, best_score)
                         if beta <= alpha:
-                            return beta
-
+                            return best_score
             return best_score
 
     def __is_new_board(self, board):
@@ -253,11 +235,10 @@ class Caro:
                     if board[i][j] == -1:
                         board[i][j] = chess
                         score = self.__alpha_beta_pruning(board, 0, False, -math.inf, math.inf)
-                        # score = self.__minimax(board, 0, False)
                         board[i][j] = -1
                         if score > best_score:
                             best_score = score
-                            position = [i, j]
+                            position = (i, j)
 
         self.put_to_possition(position[0], position[1], chess)
 
