@@ -85,4 +85,4 @@ if __name__ == '__main__':
         size = int(input_size)
 
 
-    user_ai(Caro(size))
+    print(user_ai(Caro(size)))

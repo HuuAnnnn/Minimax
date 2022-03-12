@@ -2,12 +2,13 @@ import math
 import random
 
 class Caro:
-    __table_size = 0
+    __table_size = 3
     __table = []
     __human_chess = 0
     __ai_chess = 1
     __scores = {"Win": 10, "Lose": -10, "Draw": 0}
     __chess_value = {0: 'O', 1: 'X'}
+    __win_goal = 3
 
     def __init__(self, size: int) -> None:
         self.__table_size = size
@@ -17,12 +18,14 @@ class Caro:
         return self.__table
 
     def put_to_possition(self, x_pos: int, y_pos: int, chess: int):
-        if x_pos < self.__table_size and y_pos < self.__table_size and x_pos >= 0 and y_pos >= 0:
+        try:
             if self.__table[x_pos][y_pos] == -1:
                 self.__table[x_pos][y_pos] = chess
                 return True
-        
-        return False
+            else:
+                return False
+        except:
+            return False
 
     def __display_header(self):
         print("\t", end="")
@@ -45,32 +48,62 @@ class Caro:
 
     def __check_rows(self, board):
         for i in range(len(board)):
-            count_x = board[i].count(1)
-            count_o = board[i].count(0)
+            count_x = 0
+            count_o = 0
+            for j in range(len(board[0])):
 
-            if count_x == len(board) or count_o == len(board):
+                if board[i][j] == 1:
+                    if count_o != 0:
+                        count_o = 0
+                    count_x += 1
+
+                if board[i][j] == 0:
+                    if count_x != 0:
+                        count_x = 0
+                    count_o += 1
+
+            if count_x == self.__win_goal or count_o == self.__win_goal:
                 return (count_x, count_o)
 
         return None
 
     def __check_columns(self, board):
         for i in range(len(board)):
-            col = [board[j][i] for j in range(len(board[0]))]
-            count_x = col.count(1)
-            count_o = col.count(0)
+            count_x = 0
+            count_o = 0
+            for j in range(len(board[0])):
+
+                if board[j][i] == 1:
+                    if count_o != 0:
+                        count_o = 0
+
+                    count_x += 1
+                
+                if board[j][i] == 0:
+                    if count_x != 0:
+                        count_x = 0
+                    count_o+=1
                     
-            if count_x == len(board) or count_o == len(board):
+            if count_x == self.__win_goal or count_o == self.__win_goal:
                 return (count_x, count_o)
                 
         return None
         
     def __check_main_cross(self, board):
-        main_cross = [board[i][i] for i in range(len(board))]
-        count_x = main_cross.count(1)
-        count_o = main_cross.count(0)
-        
-        if count_x == len(board) or count_o == len(board):
-            return (count_x, count_o)
+        count_x = 0
+        count_o = 0
+        for i in range(len(board)):
+            if board[i][i] == 1:
+                if count_o != 0:
+                    count_o = 0
+                count_x += 1
+            if board[i][i] == 0:
+                if count_x != 0:
+                    count_x = 0
+                count_o+=1
+            
+            if count_x == self.__win_goal or count_o == self.__win_goal:
+                return (count_x, count_o)
 
         return None
         
@@ -80,16 +113,21 @@ class Caro:
         count_o = 0
         for x_pos in range(len(board[0])):
             if board[x_pos][y_pos] == 1:
+                if count_o != 0:
+                    count_o = 0
                 count_x += 1
             if board[x_pos][y_pos] == 0:
+                if count_x != 0:
+                    count_x = 0
                 count_o += 1
+
             y_pos -= 1
 
-        if count_x == len(board) or count_o == len(board):
-            return (count_x, count_o)
+            if count_x == self.__win_goal or count_o == self.__win_goal:
+                return (count_x, count_o)
 
         return None
-
+        
     def __winner(self, board):
         states = [
             self.__check_rows(board),
