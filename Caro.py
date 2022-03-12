@@ -1,5 +1,6 @@
 import math
 import random
+import numpy as np
 
 class Caro:
     __table_size = 3
@@ -88,19 +89,35 @@ class Caro:
                 return (count_x, count_o)
                 
         return None
-        
-    def __check_main_cross(self, board):
+    
+    def __count_in_diagonal(self, row):
         count_x = 0
         count_o = 0
-        for i in range(len(board)):
-            if board[i][i] == 1:
+        for cell in row:
+            if cell == 1:
                 if count_o != 0:
                     count_o = 0
                 count_x += 1
-            if board[i][i] == 0:
+            if cell == 0:
                 if count_x != 0:
                     count_x = 0
                 count_o+=1
+
+            if cell == -1:
+                if count_o != 0:
+                    count_o = 0
+                if count_x != 0:
+                    count_x = 0
+
+        return (count_x, count_o)
+
+    def __check_main_cross(self, board):
+        count_x = 0
+        count_o = 0
+        np_board = np.array(board)
+        for i in range(-len(np_board)+1, len(np_board)):
+            board_diagonal = list(np_board.diagonal(i))
+            count_x, count_o = self.__count_in_diagonal(board_diagonal)
             
             if count_x == self.__win_goal or count_o == self.__win_goal:
                 return (count_x, count_o)
@@ -108,21 +125,13 @@ class Caro:
         return None
         
     def __check_auxiliary_cross(self, board):
-        y_pos = len(board) - 1
         count_x = 0
         count_o = 0
-        for x_pos in range(len(board[0])):
-            if board[x_pos][y_pos] == 1:
-                if count_o != 0:
-                    count_o = 0
-                count_x += 1
-            if board[x_pos][y_pos] == 0:
-                if count_x != 0:
-                    count_x = 0
-                count_o += 1
-
-            y_pos -= 1
-
+        np_board = np.fliplr(np.array(board))
+        for i in range(-len(np_board)+1, len(np_board)):
+            board_diagonal = list(np_board.diagonal(i))
+            count_x, count_o = self.__count_in_diagonal(board_diagonal)
+            
             if count_x == self.__win_goal or count_o == self.__win_goal:
                 return (count_x, count_o)
 
