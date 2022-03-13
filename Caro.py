@@ -282,6 +282,11 @@ class Caro:
             count += row.count(-1)
         return count == len(board)*len(board[0])
 
+    def __is_empty(self, board, x, y):
+        try:
+            return board[x][y] != -1
+        except:
+            return False
     def __best_move(self, chess):
         best_score = -math.inf
         board = self.__table
@@ -291,11 +296,13 @@ class Caro:
         if self.__is_new_board(board):
             position = [random.randrange(0, len(board)), random.randrange(0, len(board[0]))]
         elif humanchess_position and len(humanchess_position)  == 1:
-            i = 1
-            while not self.put_to_possition(humanchess_position[0][0], humanchess_position[0][0]+i, self.__ai_chess):
+            i = 0
+            x = humanchess_position[0][0]
+            y = humanchess_position[0][1]
+            while not self.__is_empty(board, x, y+i):
                 i += 1
-            self.put_to_possition(humanchess_position[0][0], humanchess_position[0][0]+i-1, -1)
-            position = [humanchess_position[0][0], humanchess_position[0][0]+i-1]
+
+            position = [x, y+i-1]
         else:
             for i in range(len(board)):
                 for j in range(len(board[0])):
