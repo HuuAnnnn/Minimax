@@ -54,14 +54,20 @@ class Caro:
             for j in range(len(board[0])):
 
                 if board[i][j] == 1:
-                    if count_o != 0:
+                    if count_o < self.__win_goal:
                         count_o = 0
                     count_x += 1
 
                 if board[i][j] == 0:
-                    if count_x != 0:
+                    if count_x < self.__win_goal:
                         count_x = 0
                     count_o += 1
+                
+                if board[i][j] == -1:
+                    if count_o < self.__win_goal:
+                        count_o = 0
+                    if count_x < self.__win_goal:
+                        count_x = 0
 
             if count_x == self.__win_goal or count_o == self.__win_goal:
                 return (count_x, count_o)
@@ -75,16 +81,23 @@ class Caro:
             for j in range(len(board[0])):
 
                 if board[j][i] == 1:
-                    if count_o != 0:
+                    if count_o < self.__win_goal:
                         count_o = 0
 
                     count_x += 1
                 
-                if board[j][i] == 0:
-                    if count_x != 0:
+                elif board[j][i] == 0:
+                    if count_x < self.__win_goal:
                         count_x = 0
+
                     count_o+=1
-                    
+                
+                elif board[i][j] == -1:
+                    if count_o < self.__win_goal:
+                        count_o = 0
+                    if count_x < self.__win_goal:
+                        count_x = 0
+
             if count_x == self.__win_goal or count_o == self.__win_goal:
                 return (count_x, count_o)
                 
@@ -95,23 +108,23 @@ class Caro:
         count_o = 0
         for cell in row:
             if cell == 1:
-                if count_o != 0:
+                if count_o < self.__win_goal:
                     count_o = 0
                 count_x += 1
             if cell == 0:
-                if count_x != 0:
+                if count_x < self.__win_goal:
                     count_x = 0
                 count_o+=1
 
             if cell == -1:
-                if count_o != 0:
+                if count_o < self.__win_goal:
                     count_o = 0
-                if count_x != 0:
+                if count_x < self.__win_goal:
                     count_x = 0
 
         return (count_x, count_o)
 
-    def __check_main_cross(self, board):
+    def __check_diagonal(self, board):
         count_x = 0
         count_o = 0
         np_board = np.array(board)
@@ -124,7 +137,7 @@ class Caro:
 
         return None
         
-    def __check_auxiliary_cross(self, board):
+    def __check_anti_diagonal(self, board):
         count_x = 0
         count_o = 0
         np_board = np.fliplr(np.array(board))
@@ -141,8 +154,8 @@ class Caro:
         states = [
             self.__check_rows(board),
             self.__check_columns(board),
-            self.__check_main_cross(board),
-            self.__check_auxiliary_cross(board)
+            self.__check_diagonal(board),
+            self.__check_anti_diagonal(board)
         ]
 
         win = 0
@@ -268,14 +281,21 @@ class Caro:
         for row in board:
             count += row.count(-1)
         return count == len(board)*len(board[0])
-        
+
     def __best_move(self, chess):
         best_score = -math.inf
         board = self.__table
         position = [0, 0]
+        humanchess_position = list(zip(*np.where(np.array(board) == 0)))
+
         if self.__is_new_board(board):
-            # position = [0, 0]
             position = [random.randrange(0, len(board)), random.randrange(0, len(board[0]))]
+        elif humanchess_position and len(humanchess_position) <= 1:
+            i = 1
+            while not self.put_to_possition(humanchess_position[0][0], humanchess_position[0][0]+i, self.__ai_chess):
+                i += 1
+            self.put_to_possition(humanchess_position[0][0], humanchess_position[0][0]+i-1, -1)
+            position = [humanchess_position[0][0], humanchess_position[0][0]+i-1]
         else:
             for i in range(len(board)):
                 for j in range(len(board[0])):
