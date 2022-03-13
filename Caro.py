@@ -290,7 +290,7 @@ class Caro:
 
         if self.__is_new_board(board):
             position = [random.randrange(0, len(board)), random.randrange(0, len(board[0]))]
-        elif humanchess_position and len(humanchess_position) <= 1:
+        elif humanchess_position and len(humanchess_position)  == 1:
             i = 1
             while not self.put_to_possition(humanchess_position[0][0], humanchess_position[0][0]+i, self.__ai_chess):
                 i += 1
