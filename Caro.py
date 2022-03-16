@@ -1,5 +1,6 @@
 import math
 import random
+from turtle import pos
 import numpy as np
 
 class Caro:
@@ -301,7 +302,6 @@ class Caro:
         if self.__is_new_board(board):
             position = [random.randrange(0, len(board)), random.randrange(0, len(board[0]))]
         elif human_chess_pos and len(human_chess_pos)  == 1:
-            i = 0
             x = human_chess_pos[0][0]
             y = human_chess_pos[0][1]
             empty_cell = self.__get_possible_move(board)
@@ -309,9 +309,8 @@ class Caro:
             x_pos, y_pos = random.choice(possible_move)
             while True:
                 if empty_cell[x_pos][y_pos] != -1:
-                    board[x_pos][y_pos] = self.__ai_chess
+                    position = (x_pos, y_pos)
                     break
-
             
         else:
             possible_move = self.__get_possible_move(board)
