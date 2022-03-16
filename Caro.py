@@ -209,35 +209,38 @@ class Caro:
 
         return None
 
+    def __get_possible_move(self, board):
+        return list(zip(*np.where(np.array(board) == -1)))
+
     def __minimax(self, board, depth, minimize):
         end_state = self.__check_state(board)
         if end_state:
             return self.__evaluation(end_state, depth)
              
         if minimize:
+            possible_move = self.__get_possible_move(board)
             best_score = -math.inf
-            for i in range(len(board)):
-                for j in range(len(board[0])):
-                    # create a new node
-                    if board[i][j] == -1:
-                        # try puting chess
-                        board[i][j] = self.__ai_chess
-                        # Calculating score of this case
-                        score = self.__minimax(board, depth+1, False)
-                        # restore
-                        board[i][j] = -1
-                        best_score = max(best_score, score)
-            
+            for move in possible_move:
+                x, y = move
+                board[x][y] = self.__ai_chess
+                # Calculating score of this case
+                score = self.__minimax(board, depth+1, False)
+                # restore
+                board[x][y] = -1
+                best_score = max(best_score, score)
+    
             return best_score
         else:
+            possible_move = self.__get_possible_move(board)
             best_score = math.inf
-            for i in range(len(board)):
-                for j in range(len(board[0])):
-                    if board[i][j] == -1:
-                        board[i][j] = self.__human_chess
-                        score = self.__minimax(board, depth+1, True)
-                        board[i][j] = -1
-                        best_score = min(best_score, score)
+            for move in possible_move:
+                x, y = move
+                board[x][y] = self.__human_chess
+                # Calculating score of this case
+                score = self.__minimax(board, depth+1, True)
+                # restore
+                board[x][y] = -1
+                best_score = min(best_score, score)
                         
             return best_score
 
@@ -248,32 +251,34 @@ class Caro:
             return self.__evaluation(end_state, depth)
 
         if minimize:
+            possible_move = self.__get_possible_move(board)
             best_score = -math.inf
-            for i in range(len(board)):
-                for j in range(len(board[0])):
-                    if board[i][j] == -1:
-                        board[i][j] = self.__ai_chess
-                        score = self.__alpha_beta_pruning(board, depth + 1, not minimize, alpha, beta)
-                        board[i][j] = -1
+            for move in possible_move:
+                x, y = move
+                board[x][y] = self.__ai_chess
+                score = self.__alpha_beta_pruning(board, depth + 1, not minimize, alpha, beta)
+                board[x][y] = -1
 
-                        alpha = max(alpha, score)
-                        best_score = max(alpha, best_score)
-                        if beta <= alpha:
-                            return best_score
+                alpha = max(alpha, score)
+                best_score = max(alpha, best_score)
+                if beta <= alpha:
+                    break
+
             return best_score
         else:
+            possible_move = self.__get_possible_move(board)
             best_score = math.inf
-            for i in range(len(board)):
-                for j in range(len(board[0])):
-                    if board[i][j] == -1:
-                        board[i][j] = self.__human_chess
-                        score = self.__alpha_beta_pruning(board, depth + 1, not minimize, alpha, beta)
-                        board[i][j] = -1
+            for move in possible_move:
+                x, y = move
+                board[x][y] = self.__human_chess
+                score = self.__alpha_beta_pruning(board, depth + 1, not minimize, alpha, beta)
+                board[x][y] = -1
 
-                        beta = min(beta, score)
-                        best_score = min(beta, best_score)
-                        if beta <= alpha:
-                            return best_score
+                beta = min(beta, score)
+                best_score = min(beta, best_score)
+                if beta <= alpha:
+                    break
+
             return best_score
 
     def __is_new_board(self, board):
@@ -291,28 +296,33 @@ class Caro:
         best_score = -math.inf
         board = self.__table
         position = [0, 0]
-        humanchess_position = list(zip(*np.where(np.array(board) == 0)))
+        human_chess_pos = list(zip(*np.where(np.array(board) == 0)))
 
         if self.__is_new_board(board):
             position = [random.randrange(0, len(board)), random.randrange(0, len(board[0]))]
-        elif humanchess_position and len(humanchess_position)  == 1:
+        elif human_chess_pos and len(human_chess_pos)  == 1:
             i = 0
-            x = humanchess_position[0][0]
-            y = humanchess_position[0][1]
-            while not self.__is_empty(board, x, y+i):
-                i += 1
+            x = human_chess_pos[0][0]
+            y = human_chess_pos[0][1]
+            empty_cell = self.__get_possible_move(board)
+            possible_move = [(x, y), (x-1, y), (x+1, y), (x, y+1), (x, y-1), (x-1, y+1), (x-1, y-1), (x+1, y+1), (x+1, y-1)]
+            x_pos, y_pos = random.choice(possible_move)
+            while True:
+                if empty_cell[x_pos][y_pos] != -1:
+                    board[x_pos][y_pos] = self.__ai_chess
+                    break
 
-            position = [x, y+i-1]
+            
         else:
-            for i in range(len(board)):
-                for j in range(len(board[0])):
-                    if board[i][j] == -1:
-                        board[i][j] = chess
-                        score = self.__alpha_beta_pruning(board, 0, False, -math.inf, math.inf)
-                        board[i][j] = -1
-                        if score > best_score:
-                            best_score = score
-                            position = (i, j)
+            possible_move = self.__get_possible_move(board)
+            for move in possible_move:
+                x, y = move
+                board[x][y] = chess
+                score = self.__alpha_beta_pruning(board, 0, False, -math.inf, math.inf)
+                board[x][y] = -1
+                if score > best_score:
+                    best_score = score
+                    position = (x, y)
 
         self.put_to_possition(position[0], position[1], chess)
 
