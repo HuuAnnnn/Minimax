@@ -306,8 +306,8 @@ class Caro:
             y = human_chess_pos[0][1]
             empty_cell = self.__get_possible_move(board)
             possible_move = [(x, y), (x-1, y), (x+1, y), (x, y+1), (x, y-1), (x-1, y+1), (x-1, y-1), (x+1, y+1), (x+1, y-1)]
-            x_pos, y_pos = random.choice(possible_move)
             while True:
+                x_pos, y_pos = random.choice(possible_move)
                 if empty_cell[x_pos][y_pos] != -1:
                     position = (x_pos, y_pos)
                     break
